@@ -6,7 +6,6 @@ img {
 .film-card {
     display: flex;
     margin-top: 32px;
-    margin-right: 36px;
     width: 45%;
     height: 280px;
     box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.281);
@@ -19,24 +18,35 @@ img {
     width: 40%;
     margin-right: 20px;
 }
+
 .film-card_text {
+    display: flex;
+    flex-direction: column;
     width: 60%;
     padding: 7px 7px 7px 7px;
     box-sizing: border-box;
 }
 
-.film-card_text__tittle{
+.film-card_text__tittle {
     overflow: hidden;
-    text-overflow: ellipsis;
-    height: 40%;
     box-sizing: border-box;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    line-height: 22px;
+    height: 110px;
+    column-width: 200px;
 }
 
 
-.film-card_text__date{
+.film-card_text__date {
     margin-top: 7px;
 }
 
-.film-card_text__genre{
+.film-card_text__genre {
     margin-top: 7px;
+}
+
+.film-card_text__name {
+    line-height: 28px;
+    font-size: 20px;
 }

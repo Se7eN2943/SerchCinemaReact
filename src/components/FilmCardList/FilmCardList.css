@@ -1,7 +1,23 @@
 .filmCardList{
     display: flex;
+    align-items: center;
+    justify-content: space-between;
     flex-direction: row;
     flex-wrap: wrap;
+}
+
+.filmCards{
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
     width: 1144px;
     padding: 0 33px 0 33px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+.ant-input{
+    width: 100%;
+    
 }
