@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Rate } from 'antd';
 
 export default class FilmCard extends Component {
 
@@ -38,6 +39,7 @@ export default class FilmCard extends Component {
           <FilmTextDate />
           <FilmTextGenre />
           <FilmTextTitle />
+          <Rate count={10} />
         </div>
       </li>
     );

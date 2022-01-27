@@ -1,10 +1,41 @@
-.ant-input{
-    width: 100%; 
+.ant-input {
+    width: 100%;
 }
 
-h1{
+h1 {
     display: flex;
     align-items: center;
     justify-content: center;
     margin-top: 20px;
+}
+
+.ant-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.ant-pagination-item-active {
+    background: #1890FF;
+    border-radius: 4px;
+}
+
+.ant-pagination-item-active a {
+    color: #fff;
+}
+
+.ant-spin {
+    display: block;
+}
+
+.ant-spin-dot-item{
+    width: 30px;
+    height: 30px;
+}
+
+.ant-spin-dot {
+    width: 3em;
+    height: 3em;
 }
