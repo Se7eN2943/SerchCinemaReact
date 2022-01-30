@@ -4,25 +4,21 @@ import FilmCardList from '../FilmCardList/FilmCardList'
 import CinemaService, { debounce } from '../services'
 import { format } from 'date-fns'
 
-
-
-
 export default class App extends Component {
 
     movies = new CinemaService
 
-    state = { items: [], loaded: false, error: false, value: '', onloaded: true }
+    state = { items: [], value: '', loaded: false, error: false, onloaded: true, totalRes: 1, pages: 1 }
 
-    serchMovie = () => {
-        console.log(this.state.loaded)
-        this.setState({ loaded: false })
-        console.log(this.state.loaded)
-        let url;
-        if (this.state.onloaded) url = `movie/popular`
-        else url = `search/movie`
-        if (this.state.value.trim().length !== 0 || this.state.onloaded) {
+    serchMovie = (pg) => {
+        const { value, onloaded } = this.state
+        if (onloaded || value.trim().length !== 0) {
+            this.setState({ loaded: false, error: false })
+            let url;
+            if (onloaded) url = `movie/popular`
+            else url = `search/movie`
             this.movies
-                .apiResurses(url, this.state.value)
+                .apiResurses(url, value, pg)
                 .then(apiObj => {
                     const elements = apiObj.results.map(item => {
                         if (!item.release_date) item.release_date = null
@@ -39,40 +35,47 @@ export default class App extends Component {
                             }
                         )
                     })
-                    return this.setState({ items: elements, loaded: true })
+                    return this.setState({ items: elements, loaded: true, totalRes: apiObj.total_results, pages: apiObj.page })
                 })
                 .catch(this.onError)
         }
         return this.setState({ items: [], loaded: true })
     }
 
-
     onChange = (event) => {
         this.setState({ value: event.target.value, onloaded: false })
     };
 
     onError = (err) => {
-        console.log(err)
+        console.error(err)
         this.setState({ loaded: true, error: true })
     }
 
     render() {
         const { TabPane } = Tabs;
-        const { error, loaded, items, onloaded } = this.state
+        const { error, loaded, items, onloaded, totalRes, pages, value } = this.state
         window.onload = this.serchMovie
         return (
             <main className="filmCards">
                 <Tabs defaultActiveKey="1" centered>
                     <TabPane tab="Search" key="1">
-                        <Input autoFocus placeholder="Search"
+                        <Input autoFocus placeholder="Начните вводить название фильма"
                             type="text" value={this.state.value}
                             onKeyUp={debounce(this.serchMovie, 500)}
                             onChange={this.onChange} />
                         {onloaded && <h1>Популярное сегодня</h1>}
                         {error && <Alert message="Не получилось загрузить данные =(" type="error" showIcon />}
+                        {totalRes === 0 && <Alert message="Ничего не найдено" type="info" showIcon />}
                         {!loaded && <Spin />}
                         {!(loaded && error) && < FilmCardList card={items} />}
-                        <Pagination size="small" total={50} />
+                        {onloaded || totalRes > 20 && value.trim().length !== 0 &&
+                            <Pagination
+                                showSizeChanger={false}
+                                pageSize={20}
+                                onChange={page => this.serchMovie(page)}
+                                size="small"
+                                total={totalRes}
+                                current={pages} />}
                     </TabPane>
                     <TabPane tab="Rated" key="2">
                         <Pagination size="small" total={50} />
