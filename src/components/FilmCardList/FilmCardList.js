@@ -14,10 +14,13 @@ export default class FilmCardList extends Component {
       return (
         <FilmCard
           key={item.key}
+          id={item.key}
           name={item.name}
           date={item.date}
           overview={item.overview}
           img={item.img}
+          onChangeFavorit={this.props.onChangeFavorit}
+          count = {item.count}
         />
       )
     })

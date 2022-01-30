@@ -7,8 +7,7 @@ export default class FilmCard extends Component {
 
 
   render() {
-    const{name, date, overview, img} = this.props;
-    
+    const { name, date, overview, img, id, count } = this.props;
     function FilmImg() {
       return <img src={img} alt={name}></img>;
     }
@@ -39,7 +38,7 @@ export default class FilmCard extends Component {
           <FilmTextDate />
           <FilmTextGenre />
           <FilmTextTitle />
-          <Rate count={10} />
+          <Rate value={count} count={10} onChange={(e) => this.props.onChangeFavorit(id, e)} allowClear={false} />
         </div>
       </li>
     );

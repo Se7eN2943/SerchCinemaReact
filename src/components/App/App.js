@@ -8,7 +8,7 @@ export default class App extends Component {
 
     movies = new CinemaService
 
-    state = { items: [], value: '', loaded: false, error: false, onloaded: true, totalRes: 1, pages: 1 }
+    state = { itemsFor: [], items: [], value: '', loaded: false, error: false, onloaded: true, totalRes: 1, pages: 1 }
 
     serchMovie = (pg) => {
         const { value, onloaded } = this.state
@@ -31,7 +31,8 @@ export default class App extends Component {
                                 name: item.title,
                                 date: item.release_date,
                                 overview: item.overview,
-                                img: item.poster_path
+                                img: item.poster_path,
+                                count: 0
                             }
                         )
                     })
@@ -51,9 +52,25 @@ export default class App extends Component {
         this.setState({ loaded: true, error: true })
     }
 
+    onChangeFavorit = (id, stars) => {
+        const { items, itemsFor } = this.state
+        const elementFor = items.filter(item => item.key === id)
+
+        if (itemsFor.find(item => item.key === id) !== undefined) {
+            return this.setState({
+                itemsFor: itemsFor.map(item => {
+                    if (item.key === id) item.count = stars
+                    return item
+                })
+            })
+        }
+        elementFor[0].count = stars
+        this.setState({ itemsFor: itemsFor.concat(elementFor) })
+    }
+
     render() {
         const { TabPane } = Tabs;
-        const { error, loaded, items, onloaded, totalRes, pages, value } = this.state
+        const { error, loaded, items, onloaded, totalRes, pages, value, itemsFor } = this.state
         window.onload = this.serchMovie
         return (
             <main className="filmCards">
@@ -67,7 +84,17 @@ export default class App extends Component {
                         {error && <Alert message="Не получилось загрузить данные =(" type="error" showIcon />}
                         {totalRes === 0 && <Alert message="Ничего не найдено" type="info" showIcon />}
                         {!loaded && <Spin />}
-                        {!(loaded && error) && < FilmCardList card={items} />}
+                        {!(loaded && error) && < FilmCardList card={items} onChangeFavorit={this.onChangeFavorit} />}
+                        <Pagination
+                            showSizeChanger={false}
+                            pageSize={20}
+                            onChange={page => this.serchMovie(page)}
+                            size="small"
+                            total={totalRes}
+                            current={pages} />
+                    </TabPane>
+                    <TabPane tab="Rated" key="2">
+                        {!(loaded && error) && < FilmCardList card={itemsFor} onChangeFavorit={this.onChangeFavorit} />}
                         {onloaded || totalRes > 20 && value.trim().length !== 0 &&
                             <Pagination
                                 showSizeChanger={false}
@@ -76,9 +103,6 @@ export default class App extends Component {
                                 size="small"
                                 total={totalRes}
                                 current={pages} />}
-                    </TabPane>
-                    <TabPane tab="Rated" key="2">
-                        <Pagination size="small" total={50} />
                     </TabPane>
                 </Tabs>
             </main>

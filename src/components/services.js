@@ -9,7 +9,10 @@ export default class CinemaService {
         if (!res.ok) throw new Error('Что то пошло не так')
         return await res.json()
     }
+
+
 }
+
 
 const debounce = (fn, debounceTime) => {
     let timer;
