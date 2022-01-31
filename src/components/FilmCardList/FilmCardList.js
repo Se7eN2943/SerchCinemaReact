@@ -4,10 +4,8 @@ import FilmCard from '../FilmCard/FilmCard';
 
 
 
+
 export default class FilmCardList extends Component {
-
-
-
 
   render() {
     const cardElements = this.props.card.map(item => {
@@ -20,7 +18,9 @@ export default class FilmCardList extends Component {
           overview={item.overview}
           img={item.img}
           onChangeFavorit={this.props.onChangeFavorit}
-          count = {item.count}
+          count={item.count}
+          average={item.average}
+          genre={item.genre}
         />
       )
     })

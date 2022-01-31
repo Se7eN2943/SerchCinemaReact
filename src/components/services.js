@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default class CinemaService {
     async apiResurses(url, serchValue, page = 1) {
         const serch = `&query=${serchValue}`
@@ -10,7 +12,11 @@ export default class CinemaService {
         return await res.json()
     }
 
-
+    async genresList() {
+        const res = await fetch('https://api.themoviedb.org/3/genre/movie/list?api_key=90d5e20a86b4ddbdf3739dbeffe07279&language=ru-RU')
+        if (!res.ok) throw new Error('Что то пошло не так')
+        return await res.json()
+    }
 }
 
 
@@ -22,6 +28,14 @@ const debounce = (fn, debounceTime) => {
     }
 };
 
+const {
+    Provider: ProviderGeners,
+    Consumer: ConsumerGeners
+} = React.createContext();
+
+
 export {
-    debounce
+    debounce,
+    ProviderGeners,
+    ConsumerGeners
 }
