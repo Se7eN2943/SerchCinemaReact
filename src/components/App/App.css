@@ -28,6 +28,7 @@ h1 {
 
 .ant-spin {
     display: block;
+    margin-top: 30px;
 }
 
 .ant-spin-dot-item{

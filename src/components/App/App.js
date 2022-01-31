@@ -1,30 +1,34 @@
 import React, { Component } from 'react';
 import { Input, Spin, Alert, Tabs, Pagination } from 'antd';
 import FilmCardList from '../FilmCardList/FilmCardList'
-import CinemaService, { debounce } from '../services'
+import CinemaService, { debounce, ProviderGeners } from '../services'
 import { format } from 'date-fns'
 
 export default class App extends Component {
 
     movies = new CinemaService
 
-    state = { itemsFor: [], items: [], value: '', loaded: false, error: false, onloaded: true, totalRes: 1, pages: 1 }
+    state = { genres: [], itemsFor: [], items: [], value: '', loaded: false, error: false, onloaded: true, totalRes: 1, pages: 1 }
 
     serchMovie = (pg) => {
-        const { value, onloaded } = this.state
+        const { value, onloaded, genres, itemsFor } = this.state
         if (onloaded || value.trim().length !== 0) {
-            this.setState({ loaded: false, error: false })
             let url;
             if (onloaded) url = `movie/popular`
             else url = `search/movie`
-            this.movies
-                .apiResurses(url, value, pg)
+            this.setState({ loaded: false, error: false })
+            this.movies.apiResurses(url, value, pg)
                 .then(apiObj => {
                     const elements = apiObj.results.map(item => {
                         if (!item.release_date) item.release_date = null
                         else item.release_date = format(new Date(item.release_date), 'PP')
                         if (!item.poster_path) item.poster_path = "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/e48bc3b5-24c9-46dd-9a05-2ae421830604/600x900"
                         else item.poster_path = `https://image.tmdb.org/t/p/original${item.poster_path}`
+                        const serchCount = () => {
+                            let a = itemsFor.find(itemFor => item.id === itemFor.key)
+                            if (a !== undefined) return a.count
+                            return 0
+                        }
                         return (
                             {
                                 key: item.id,
@@ -32,20 +36,25 @@ export default class App extends Component {
                                 date: item.release_date,
                                 overview: item.overview,
                                 img: item.poster_path,
-                                count: 0
+                                count: serchCount(),
+                                average: item.vote_average,
+                                genre: item.genre_ids.map(item => {
+                                    let genre = genres.filter(genre => genre.id === item)
+                                    return genre[0].name
+                                })
                             }
                         )
                     })
                     return this.setState({ items: elements, loaded: true, totalRes: apiObj.total_results, pages: apiObj.page })
                 })
                 .catch(this.onError)
-        }
-        return this.setState({ items: [], loaded: true })
+        } else return this.setState({ items: [], loaded: true })
     }
 
     onChange = (event) => {
         this.setState({ value: event.target.value, onloaded: false })
     };
+
 
     onError = (err) => {
         console.error(err)
@@ -55,58 +64,64 @@ export default class App extends Component {
     onChangeFavorit = (id, stars) => {
         const { items, itemsFor } = this.state
         const elementFor = items.filter(item => item.key === id)
-
         if (itemsFor.find(item => item.key === id) !== undefined) {
-            return this.setState({
-                itemsFor: itemsFor.map(item => {
-                    if (item.key === id) item.count = stars
-                    return item
-                })
+            let a = itemsFor.map(item => {
+                if (item.key === id) item.count = stars
+                return item
             })
+            let b = items.map(item => {
+                if (item.key === id) item.count = stars
+                return item
+            })
+            localStorage.setItem('itemsFor', JSON.stringify(a))
+            localStorage.setItem('items', JSON.stringify(b))
+            this.setState({ itemsFor: a })
+            return this.setState({ items: b })
         }
         elementFor[0].count = stars
+        localStorage.setItem('itemsFor', JSON.stringify(itemsFor.concat(elementFor)))
         this.setState({ itemsFor: itemsFor.concat(elementFor) })
     }
 
+
     render() {
         const { TabPane } = Tabs;
-        const { error, loaded, items, onloaded, totalRes, pages, value, itemsFor } = this.state
-        window.onload = this.serchMovie
+        const { error, loaded, items, onloaded, totalRes, pages, value, itemsFor, genres } = this.state
+        window.onload = async () => {
+            await this.movies.genresList().then(res => this.setState({ genres: res.genres }))
+            localStorage.getItem('itemsFor') !== null && this.setState({ itemsFor: JSON.parse(localStorage.getItem('itemsFor')) })
+            this.serchMovie()
+        }
         return (
-            <main className="filmCards">
-                <Tabs defaultActiveKey="1" centered>
-                    <TabPane tab="Search" key="1">
-                        <Input autoFocus placeholder="Начните вводить название фильма"
-                            type="text" value={this.state.value}
-                            onKeyUp={debounce(this.serchMovie, 500)}
-                            onChange={this.onChange} />
-                        {onloaded && <h1>Популярное сегодня</h1>}
-                        {error && <Alert message="Не получилось загрузить данные =(" type="error" showIcon />}
-                        {totalRes === 0 && <Alert message="Ничего не найдено" type="info" showIcon />}
-                        {!loaded && <Spin />}
-                        {!(loaded && error) && < FilmCardList card={items} onChangeFavorit={this.onChangeFavorit} />}
-                        <Pagination
-                            showSizeChanger={false}
-                            pageSize={20}
-                            onChange={page => this.serchMovie(page)}
-                            size="small"
-                            total={totalRes}
-                            current={pages} />
-                    </TabPane>
-                    <TabPane tab="Rated" key="2">
-                        {!(loaded && error) && < FilmCardList card={itemsFor} onChangeFavorit={this.onChangeFavorit} />}
-                        {onloaded || totalRes > 20 && value.trim().length !== 0 &&
-                            <Pagination
-                                showSizeChanger={false}
-                                pageSize={20}
-                                onChange={page => this.serchMovie(page)}
-                                size="small"
-                                total={totalRes}
-                                current={pages} />}
-                    </TabPane>
-                </Tabs>
-            </main>
-        );
+            <ProviderGeners value={genres}>
+                <main className="filmCards">
+                    <Tabs defaultActiveKey="1" centered>
+                        <TabPane tab="Поиск" key="1">
+                            <Input autoFocus placeholder="Начните вводить название фильма"
+                                type="text" value={this.state.value}
+                                onKeyUp={debounce(this.serchMovie, 500)}
+                                onChange={this.onChange} />
+                            {onloaded && <h1>Популярное сегодня</h1>}
+                            {error && <Alert message="Не получилось загрузить данные =(" type="error" showIcon />}
+                            {totalRes === 0 && <Alert message="Ничего не найдено" type="info" showIcon />}
+                            {!loaded && <Spin />}
+                            {(!error && loaded) && < FilmCardList card={items} onChangeFavorit={this.onChangeFavorit} />}
+                            {loaded && totalRes > 20 && value.trim().length !== 0 &&
+                                <Pagination
+                                    showSizeChanger={false}
+                                    pageSize={20}
+                                    onChange={page => this.serchMovie(page)}
+                                    size="small"
+                                    total={totalRes}
+                                    current={pages} />}
+                        </TabPane>
+                        <TabPane tab="Оцененные" key="2">
+                            {!(loaded && error) && < FilmCardList card={itemsFor} onChangeFavorit={this.onChangeFavorit} />}
+                        </TabPane>
+                    </Tabs>
+                </main>
+            </ProviderGeners>
+        )
     }
 }
 

@@ -1,27 +1,37 @@
 .filmCardList {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 33px;
-}
-
-.filmCards {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    justify-content: center;
+    grid-template-columns: auto auto auto;
+    gap: 30px;
     margin-top: 30px;
-    display: flex;
-    flex-direction: column;
-    width: 1144px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
+.ant-tabs-content {
+    padding: 0 30 20 30;
+}
+
+.ant-tabs {
+    margin-top: 20px;
+}
 
 .ant-input {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    margin: 30 auto 20 auto;
     width: 100%;
 
 }
 
+@media screen and (max-width: 1480px) {
+    .filmCardList {
+        grid-template-columns: auto auto;
+
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .filmCardList {
+        grid-template-columns: auto;
+    }
+}

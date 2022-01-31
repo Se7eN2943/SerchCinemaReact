@@ -1,0 +1,9 @@
+
+.film-card_text__genre{
+    background: #FAFAFA;
+    border: 1px solid #D9D9D9;
+    box-sizing: border-box;
+    border-radius: 2px;
+    padding: 3 5 3 5;
+    margin: 0 3 3 0
+}
