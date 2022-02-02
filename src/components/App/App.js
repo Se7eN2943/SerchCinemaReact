@@ -55,7 +55,6 @@ export default class App extends Component {
         this.setState({ value: event.target.value, onloaded: false })
     };
 
-
     onError = (err) => {
         console.error(err)
         this.setState({ loaded: true, error: true })
@@ -82,7 +81,6 @@ export default class App extends Component {
         localStorage.setItem('itemsFor', JSON.stringify(itemsFor.concat(elementFor)))
         this.setState({ itemsFor: itemsFor.concat(elementFor) })
     }
-
 
     render() {
         const { TabPane } = Tabs;
@@ -124,5 +122,3 @@ export default class App extends Component {
         )
     }
 }
-
-

@@ -5,14 +5,38 @@ import FilmCardGenre from './FilmCardGenre/FilmCardGenre';
 
 export default class FilmCard extends Component {
 
+  static propTypes = {
+    name: PropTypes.string,
+    date: PropTypes.string,
+    overview: PropTypes.string,
+    img: PropTypes.string,
+    id: PropTypes.number,
+    genre: PropTypes.arrayOf(PropTypes.object),
+    average: PropTypes.number,
+    onChangeFavorit: PropTypes.func
+  }
 
+  static defaultProps = {
+    name: "Без названия",
+    date: "Дата премьеры не известна",
+    overview: "Нет описания фильма",
+    img: "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/e48bc3b5-24c9-46dd-9a05-2ae421830604/600x900",
+    count: 0,
+    id: 1,
+    genre: ['Жанр не указан'],
+    average: 0,
+    onChangeFavorit: () => { }
+  }
 
   render() {
-
     const { name, date, overview, img, id, count, genre, average } = this.props;
 
     function FilmImg() {
-      return <img src={img} alt={name}></img>;
+      return (
+        <div className="film-card_img">
+          <img src={img} alt={name}></img>
+        </div>
+      )
     }
 
     function FilmTextH2() {
@@ -22,7 +46,6 @@ export default class FilmCard extends Component {
       if (average >= 5 && average < 7) raitingStyle = "raiting raiting_57"
       if (average >= 7) raitingStyle = "raiting raiting_710"
 
-
       return (
         <div className="head">
           <h2 className='film-card_text__name'>{name}</h2>
@@ -31,12 +54,9 @@ export default class FilmCard extends Component {
       )
     }
 
-
     function FilmTextDate() {
       return <p className='film-card_text__date'>{date}</p>
     }
-
-
 
     function FilmTextGenres() {
       return (
@@ -46,21 +66,22 @@ export default class FilmCard extends Component {
       )
     }
 
-
-
     function FilmTextTitle() {
       return <p className="film-card_text__tittle">{overview}</p>
     }
 
     return (
       <li className="film-card">
-        <div className="film-card_img">
-          <FilmImg />
-        </div>
+        {window.visualViewport.width > 576 ? <FilmImg /> : null}
         <div className="film-card_text">
-          <FilmTextH2 />
-          <FilmTextDate />
-          <FilmTextGenres />
+          <div className="mobile_card">
+            {window.visualViewport.width <= 576 ? <FilmImg /> : null}
+            <div className="film-card_text__wrapper">
+              <FilmTextH2 />
+              <FilmTextDate />
+              <FilmTextGenres />
+            </div>
+          </div>
           <FilmTextTitle />
           <Rate value={count} count={10} onChange={(e) => this.props.onChangeFavorit(id, e)} allowClear={false} />
         </div>

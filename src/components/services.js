@@ -1,6 +1,7 @@
 import React from 'react';
 
 export default class CinemaService {
+    
     async apiResurses(url, serchValue, page = 1) {
         const serch = `&query=${serchValue}`
         const defURL = 'https://api.themoviedb.org/3/'
@@ -19,7 +20,6 @@ export default class CinemaService {
     }
 }
 
-
 const debounce = (fn, debounceTime) => {
     let timer;
     return function (...args) {
@@ -32,7 +32,6 @@ const {
     Provider: ProviderGeners,
     Consumer: ConsumerGeners
 } = React.createContext();
-
 
 export {
     debounce,

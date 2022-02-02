@@ -2,11 +2,16 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import FilmCard from '../FilmCard/FilmCard';
 
-
-
-
 export default class FilmCardList extends Component {
+  static propTypes = {
+    card: PropTypes.arrayOf(PropTypes.object),
+    onChangeFavorit: PropTypes.func
+  }
 
+  static defaultProps = {
+    card: [],
+    onChangeFavorit: () => { }
+  }
   render() {
     const cardElements = this.props.card.map(item => {
       return (
@@ -25,10 +30,7 @@ export default class FilmCardList extends Component {
       )
     })
     return (
-      < ul className="filmCardList" >
-        {cardElements}
-      </ul >
+      < ul className="filmCardList" >{cardElements}</ul >
     )
   }
 }
-
