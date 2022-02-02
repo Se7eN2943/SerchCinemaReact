@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Input, Spin, Alert, Tabs, Pagination } from 'antd';
+import { format } from 'date-fns'
 import FilmCardList from '../FilmCardList/FilmCardList'
 import CinemaService, { debounce, ProviderGeners } from '../services'
-import { format } from 'date-fns'
 
 export default class App extends Component {
 
@@ -25,7 +25,7 @@ export default class App extends Component {
                         if (!item.poster_path) item.poster_path = "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/e48bc3b5-24c9-46dd-9a05-2ae421830604/600x900"
                         else item.poster_path = `https://image.tmdb.org/t/p/original${item.poster_path}`
                         const serchCount = () => {
-                            let a = itemsFor.find(itemFor => item.id === itemFor.key)
+                            const a = itemsFor.find(itemFor => item.id === itemFor.key)
                             if (a !== undefined) return a.count
                             return 0
                         }
@@ -39,7 +39,7 @@ export default class App extends Component {
                                 count: serchCount(),
                                 average: item.vote_average,
                                 genre: item.genre_ids.map(item => {
-                                    let genre = genres.filter(genre => genre.id === item)
+                                    const genre = genres.filter(genre => genre.id === item)
                                     return genre[0].name
                                 })
                             }
@@ -64,11 +64,11 @@ export default class App extends Component {
         const { items, itemsFor } = this.state
         const elementFor = items.filter(item => item.key === id)
         if (itemsFor.find(item => item.key === id) !== undefined) {
-            let a = itemsFor.map(item => {
+            const a = itemsFor.map(item => {
                 if (item.key === id) item.count = stars
                 return item
             })
-            let b = items.map(item => {
+            const b = items.map(item => {
                 if (item.key === id) item.count = stars
                 return item
             })

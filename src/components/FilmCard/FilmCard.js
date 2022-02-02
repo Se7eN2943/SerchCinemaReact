@@ -11,7 +11,7 @@ export default class FilmCard extends Component {
     overview: PropTypes.string,
     img: PropTypes.string,
     id: PropTypes.number,
-    genre: PropTypes.arrayOf(PropTypes.object),
+    genre: PropTypes.array,
     average: PropTypes.number,
     onChangeFavorit: PropTypes.func
   }
