@@ -10,8 +10,15 @@ export default class App extends Component {
 
     state = { genres: [], itemsFor: [], items: [], value: '', loaded: false, error: false, onloaded: true, totalRes: 1, pages: 1 }
 
+    componentDidMount = async () => {
+        await this.movies.genresList().then(res => this.setState({ genres: res.genres }))
+        localStorage.getItem('itemsFor') !== null && this.setState({ itemsFor: JSON.parse(localStorage.getItem('itemsFor')) })
+        this.serchMovie()
+    }
+
+
     serchMovie = (pg) => {
-        const { value, onloaded, genres, itemsFor } = this.state
+        const { value, onloaded, itemsFor } = this.state
         if (onloaded || value.trim().length !== 0) {
             let url;
             if (onloaded) url = `movie/popular`
@@ -38,10 +45,7 @@ export default class App extends Component {
                                 img: item.poster_path,
                                 count: serchCount(),
                                 average: item.vote_average,
-                                genre: item.genre_ids.map(item => {
-                                    const genre = genres.filter(genre => genre.id === item)
-                                    return genre[0].name
-                                })
+                                genre: item.genre_ids
                             }
                         )
                     })
@@ -85,11 +89,6 @@ export default class App extends Component {
     render() {
         const { TabPane } = Tabs;
         const { error, loaded, items, onloaded, totalRes, pages, value, itemsFor, genres } = this.state
-        window.onload = async () => {
-            await this.movies.genresList().then(res => this.setState({ genres: res.genres }))
-            localStorage.getItem('itemsFor') !== null && this.setState({ itemsFor: JSON.parse(localStorage.getItem('itemsFor')) })
-            this.serchMovie()
-        }
         return (
             <ProviderGeners value={genres}>
                 <main className="filmCards">

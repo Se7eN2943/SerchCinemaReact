@@ -30,7 +30,6 @@ export default class FilmCard extends Component {
 
   render() {
     const { name, date, overview, img, id, count, genre, average } = this.props;
-
     function FilmImg() {
       return (
         <div className="film-card_img">
