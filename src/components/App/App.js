@@ -133,6 +133,7 @@ export default class App extends Component {
                                     current={pages} />}
                         </TabPane>
                         <TabPane tab="Оцененные" key="2">
+                            {!loaded && <Spin />}
                             {!(loaded && error) && < FilmCardList card={items} onChangeFavorit={this.onChangeFavorit} />}
                         </TabPane>
                     </Tabs>
