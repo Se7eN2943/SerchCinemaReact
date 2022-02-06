@@ -5,6 +5,10 @@ import FilmCardGenre from './FilmCardGenre/FilmCardGenre';
 
 export default class FilmCard extends Component {
 
+  state = {
+    count: 0
+  }
+
   static propTypes = {
     name: PropTypes.string,
     date: PropTypes.string,
@@ -28,8 +32,31 @@ export default class FilmCard extends Component {
     onChangeFavorit: () => { }
   }
 
+  checkCount = () => {
+    const { id, count } = this.props
+    if (this.props.count != 0) return this.setState({ count: count }) 
+    const localItem = JSON.parse(sessionStorage.getItem('items'))
+    if (localItem !== null) {
+      localItem.forEach(item => {
+        if (item.key === id && item.count !== undefined) return this.setState({ count: item.count })  
+      })
+    }
+  }
+
+  changeStars = (e) => {
+    const { id, onChangeFavorit } = this.props
+    this.setState({ count: e })
+    return onChangeFavorit(id, e)
+  }
+
+
+  componentDidMount = () => {
+    this.setState({ count: this.props.count })
+    this.checkCount()
+  }
+
   render() {
-    const { name, date, overview, img, id, count, genre, average } = this.props;
+    const { name, date, overview, img, id, genre, average } = this.props;
     function FilmImg() {
       return (
         <div className="film-card_img">
@@ -82,7 +109,7 @@ export default class FilmCard extends Component {
             </div>
           </div>
           <FilmTextTitle />
-          <Rate value={count} count={10} onChange={(e) => this.props.onChangeFavorit(id, e)} allowClear={false} />
+          <Rate value={this.props.count != 0 ? this.props.count : this.state.count} count={10} onChange={(e) => this.changeStars(e)} allowClear={false} />
         </div>
       </li>
     );

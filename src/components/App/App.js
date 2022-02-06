@@ -8,17 +8,43 @@ export default class App extends Component {
 
     movies = new CinemaService
 
-    state = { genres: [], itemsFor: [], items: [], value: '', loaded: false, error: false, onloaded: true, totalRes: 1, pages: 1 }
+    state = { session: '', genres: [], items: [], value: '', loaded: false, error: false, onloaded: true, totalRes: 1, pages: 1 }
 
     componentDidMount = async () => {
         await this.movies.genresList().then(res => this.setState({ genres: res.genres }))
-        localStorage.getItem('itemsFor') !== null && this.setState({ itemsFor: JSON.parse(localStorage.getItem('itemsFor')) })
+        sessionStorage.getItem('itemsFor') !== null && this.setState({ itemsFor: JSON.parse(sessionStorage.getItem('itemsFor')) })
         this.serchMovie()
+        await this.movies.createGestSession().then(session => this.setState({ session: session.guest_session_id }))
     }
 
+    rateMovieList = () => {
+        this.setState({ loaded: false, error: false })
+        this.movies.loadGestSessionRateMovies(this.state.session).then(movieOBJ => {
+            const elements = movieOBJ.results.map(item => {
+                if (!item.release_date) item.release_date = null
+                else item.release_date = format(new Date(item.release_date), 'PP')
+                if (!item.poster_path) item.poster_path = "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/e48bc3b5-24c9-46dd-9a05-2ae421830604/600x900"
+                else item.poster_path = `https://image.tmdb.org/t/p/original${item.poster_path}`
+                return (
+                    {
+                        key: item.id,
+                        name: item.title,
+                        date: item.release_date,
+                        overview: item.overview,
+                        img: item.poster_path,
+                        count: item.rating,
+                        average: item.vote_average,
+                        genre: item.genre_ids
+                    }
+                )
+            })
+            return this.setState({ items: elements, loaded: true, totalRes: movieOBJ.total_results, pages: movieOBJ.page })
+        })
+            .catch(this.onError)
+    }
 
     serchMovie = (pg) => {
-        const { value, onloaded, itemsFor } = this.state
+        const { value, onloaded } = this.state
         if (onloaded || value.trim().length !== 0) {
             let url;
             if (onloaded) url = `movie/popular`
@@ -31,11 +57,6 @@ export default class App extends Component {
                         else item.release_date = format(new Date(item.release_date), 'PP')
                         if (!item.poster_path) item.poster_path = "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/e48bc3b5-24c9-46dd-9a05-2ae421830604/600x900"
                         else item.poster_path = `https://image.tmdb.org/t/p/original${item.poster_path}`
-                        const serchCount = () => {
-                            const a = itemsFor.find(itemFor => item.id === itemFor.key)
-                            if (a !== undefined) return a.count
-                            return 0
-                        }
                         return (
                             {
                                 key: item.id,
@@ -43,7 +64,7 @@ export default class App extends Component {
                                 date: item.release_date,
                                 overview: item.overview,
                                 img: item.poster_path,
-                                count: serchCount(),
+                                count: item.rating,
                                 average: item.vote_average,
                                 genre: item.genre_ids
                             }
@@ -65,38 +86,37 @@ export default class App extends Component {
     }
 
     onChangeFavorit = (id, stars) => {
-        const { items, itemsFor } = this.state
-        const elementFor = items.filter(item => item.key === id)
-        if (itemsFor.find(item => item.key === id) !== undefined) {
-            const a = itemsFor.map(item => {
-                if (item.key === id) item.count = stars
-                return item
-            })
-            const b = items.map(item => {
-                if (item.key === id) item.count = stars
-                return item
-            })
-            localStorage.setItem('itemsFor', JSON.stringify(a))
-            localStorage.setItem('items', JSON.stringify(b))
-            this.setState({ itemsFor: a })
-            return this.setState({ items: b })
+        this.movies.rateMovie(stars, id, this.state.session)
+        const element = this.state.items.find(item => item.key === id)
+        const localItems = JSON.parse(sessionStorage.getItem('items'))
+        if (localItems !== null) {
+            if (localItems.find(item => item.key === id)) {
+                const mutLocalItems = localItems.map(item => {
+                    if (item.key === id) item.count = stars
+                    return item
+                })
+                sessionStorage.setItem('items', JSON.stringify(mutLocalItems))
+            } else {
+                element.count = stars
+                sessionStorage.setItem('items', JSON.stringify(localItems.concat([element])))
+            }
+        } else {
+            element.count = stars
+            sessionStorage.setItem('items', JSON.stringify([element]))
         }
-        elementFor[0].count = stars
-        localStorage.setItem('itemsFor', JSON.stringify(itemsFor.concat(elementFor)))
-        this.setState({ itemsFor: itemsFor.concat(elementFor) })
     }
 
     render() {
         const { TabPane } = Tabs;
-        const { error, loaded, items, onloaded, totalRes, pages, value, itemsFor, genres } = this.state
+        const { error, loaded, items, onloaded, totalRes, pages, value, genres } = this.state
         return (
             <ProviderGeners value={genres}>
                 <main className="filmCards">
-                    <Tabs defaultActiveKey="1" centered>
+                    <Tabs onChange={(activeKey) => activeKey == "2" ? this.rateMovieList() : this.serchMovie()} defaultActiveKey="1" centered>
                         <TabPane tab="Поиск" key="1">
                             <Input autoFocus placeholder="Начните вводить название фильма"
                                 type="text" value={this.state.value}
-                                onKeyUp={debounce(this.serchMovie, 500)}
+                                onInput={debounce(this.serchMovie, 500)}
                                 onChange={this.onChange} />
                             {onloaded && <h1>Популярное сегодня</h1>}
                             {error && <Alert message="Не получилось загрузить данные =(" type="error" showIcon />}
@@ -113,11 +133,11 @@ export default class App extends Component {
                                     current={pages} />}
                         </TabPane>
                         <TabPane tab="Оцененные" key="2">
-                            {!(loaded && error) && < FilmCardList card={itemsFor} onChangeFavorit={this.onChangeFavorit} />}
+                            {!(loaded && error) && < FilmCardList card={items} onChangeFavorit={this.onChangeFavorit} />}
                         </TabPane>
                     </Tabs>
-                </main>
-            </ProviderGeners>
+                </main >
+            </ProviderGeners >
         )
     }
 }
