@@ -15,6 +15,7 @@ export default class FilmCardList extends Component {
   }
 
   render() {
+    
     const cardElements = this.props.card.map(item => {
       return (
         < ConsumerGeners key={item.key} >
@@ -28,6 +29,7 @@ export default class FilmCardList extends Component {
                   return genre[0].name
                 })
               }
+
               return (
                 <FilmCard
                   key={item.key}
