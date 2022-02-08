@@ -14,9 +14,14 @@ export default class FilmCardList extends Component {
     onChangeFavorit: () => { }
   }
 
+
+
+
+
+
   render() {
-    
     const cardElements = this.props.card.map(item => {
+     
       return (
         < ConsumerGeners key={item.key} >
           {

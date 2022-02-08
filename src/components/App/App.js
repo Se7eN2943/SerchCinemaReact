@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Input, Spin, Alert, Tabs, Pagination } from 'antd';
-import { format } from 'date-fns'
 import FilmCardList from '../FilmCardList/FilmCardList'
 import CinemaService, { debounce, ProviderGeners } from '../services'
 
@@ -13,65 +12,36 @@ export default class App extends Component {
     componentDidMount = async () => {
         await this.movies.genresList().then(res => this.setState({ genres: res.genres }))
         sessionStorage.getItem('itemsFor') !== null && this.setState({ itemsFor: JSON.parse(sessionStorage.getItem('itemsFor')) })
-        this.serchMovie()
+        this.movie()
         await this.movies.createGestSession().then(session => this.setState({ session: session.guest_session_id }))
     }
 
-    rateMovieList = () => {
-        this.setState({ loaded: false, error: false })
-        this.movies.loadGestSessionRateMovies(this.state.session).then(movieOBJ => {
-            const elements = movieOBJ.results.map(item => {
-                if (!item.release_date) item.release_date = null
-                else item.release_date = format(new Date(item.release_date), 'PP')
-                if (!item.poster_path) item.poster_path = "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/e48bc3b5-24c9-46dd-9a05-2ae421830604/600x900"
-                else item.poster_path = `https://image.tmdb.org/t/p/original${item.poster_path}`
-                return (
-                    {
-                        key: item.id,
-                        name: item.title,
-                        date: item.release_date,
-                        overview: item.overview,
-                        img: item.poster_path,
-                        count: item.rating,
-                        average: item.vote_average,
-                        genre: item.genre_ids
-                    }
-                )
-            })
-            return this.setState({ items: elements, loaded: true, totalRes: movieOBJ.total_results, pages: movieOBJ.page })
-        })
-            .catch(this.onError)
-    }
-
-    serchMovie = (pg) => {
+    movie = (inquiryType, pg) => {
         const { value, onloaded } = this.state
-        if (onloaded || value.trim().length !== 0) {
+        if (inquiryType === 'getRate' || onloaded || value.trim().length !== 0) {
             let url;
+            let inquiry;
             if (onloaded) url = `movie/popular`
             else url = `search/movie`
             this.setState({ loaded: false, error: false })
-            this.movies.apiResurses(url, value, pg)
-                .then(apiObj => {
-                    const elements = apiObj.results.map(item => {
-                        if (!item.release_date) item.release_date = null
-                        else item.release_date = format(new Date(item.release_date), 'PP')
-                        if (!item.poster_path) item.poster_path = "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/e48bc3b5-24c9-46dd-9a05-2ae421830604/600x900"
-                        else item.poster_path = `https://image.tmdb.org/t/p/original${item.poster_path}`
-                        return (
-                            {
-                                key: item.id,
-                                name: item.title,
-                                date: item.release_date,
-                                overview: item.overview,
-                                img: item.poster_path,
-                                count: item.rating,
-                                average: item.vote_average,
-                                genre: item.genre_ids
-                            }
-                        )
-                    })
-                    return this.setState({ items: elements, loaded: true, totalRes: apiObj.total_results, pages: apiObj.page })
+            inquiryType === 'getRate' ? inquiry = this.movies.loadGestSessionRateMovies(this.state.session) : inquiry = this.movies.apiResurses(url, value, pg)
+            inquiry.then(movieOBJ => {
+                const elements = movieOBJ.results.map(item => {
+                    return (
+                        {
+                            key: item.id,
+                            name: item.title,
+                            date: item.release_date,
+                            overview: item.overview,
+                            img: item.poster_path,
+                            count: item.rating,
+                            average: item.vote_average,
+                            genre: item.genre_ids
+                        }
+                    )
                 })
+                return this.setState({ items: elements, loaded: true, totalRes: movieOBJ.total_results, pages: movieOBJ.page })
+            })
                 .catch(this.onError)
         } else return this.setState({ items: [], loaded: true })
     }
@@ -112,11 +82,11 @@ export default class App extends Component {
         return (
             <ProviderGeners value={genres}>
                 <main className="filmCards">
-                    <Tabs onChange={(activeKey) => activeKey == "2" ? this.rateMovieList() : this.serchMovie()} defaultActiveKey="1" centered>
+                    <Tabs onChange={(activeKey) => activeKey == "2" ? this.movie('getRate') : this.movie()} defaultActiveKey="1" centered>
                         <TabPane tab="Поиск" key="1">
                             <Input autoFocus placeholder="Начните вводить название фильма"
                                 type="text" value={this.state.value}
-                                onInput={debounce(this.serchMovie, 500)}
+                                onInput={debounce(this.movie, 5000)}
                                 onChange={this.onChange} />
                             {onloaded && <h1>Популярное сегодня</h1>}
                             {error && <Alert message="Не получилось загрузить данные =(" type="error" showIcon />}
@@ -127,7 +97,7 @@ export default class App extends Component {
                                 <Pagination
                                     showSizeChanger={false}
                                     pageSize={20}
-                                    onChange={page => this.serchMovie(page)}
+                                    onChange={page => this.movie('search', page)}
                                     size="small"
                                     total={totalRes}
                                     current={pages} />}

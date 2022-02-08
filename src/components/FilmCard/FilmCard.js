@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Rate } from 'antd';
+import { format } from 'date-fns'
 import FilmCardGenre from './FilmCardGenre/FilmCardGenre';
 
 export default class FilmCard extends Component {
@@ -34,11 +35,11 @@ export default class FilmCard extends Component {
 
   checkCount = () => {
     const { id, count } = this.props
-    if (this.props.count != 0) return this.setState({ count: count }) 
+    if (this.props.count != 0) return this.setState({ count: count })
     const localItem = JSON.parse(sessionStorage.getItem('items'))
     if (localItem !== null) {
       localItem.forEach(item => {
-        if (item.key === id && item.count !== undefined) return this.setState({ count: item.count })  
+        if (item.key === id && item.count !== undefined) return this.setState({ count: item.count })
       })
     }
   }
@@ -56,11 +57,17 @@ export default class FilmCard extends Component {
   }
 
   render() {
-    const { name, date, overview, img, id, genre, average } = this.props;
+    const { name, overview, id, genre, average } = this.props;
+    let { date, img } = this.props
     function FilmImg() {
       return (
         <div className="film-card_img">
-          <img src={img} alt={name}></img>
+          <img
+            src={img != null
+              ? img = `https://image.tmdb.org/t/p/original${img}`
+              : (img = "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/e48bc3b5-24c9-46dd-9a05-2ae421830604/600x900")}
+            alt={name}>
+          </img>
         </div>
       )
     }
@@ -81,7 +88,7 @@ export default class FilmCard extends Component {
     }
 
     function FilmTextDate() {
-      return <p className='film-card_text__date'>{date}</p>
+      return <p className='film-card_text__date'>{!date ? null : date = format(new Date(date), 'PP')}</p>
     }
 
     function FilmTextGenres() {
