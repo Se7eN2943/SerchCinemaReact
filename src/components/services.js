@@ -2,7 +2,6 @@ import React from 'react';
 
 export default class CinemaService {
 
-
     constructor() {
         this.defURL = 'https://api.themoviedb.org/3/'
         this.apiKey = '?api_key=90d5e20a86b4ddbdf3739dbeffe07279'
