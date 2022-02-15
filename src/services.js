@@ -47,16 +47,7 @@ export default class CinemaService {
         if (!res.ok) throw new Error('Не удалось создать гостевую сессию')
         return await res.json()
     }
-    
 }
-
-const debounce = (fn, debounceTime) => {
-    let timer;
-    return function (...args) {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn.apply(this, args), debounceTime)
-    }
-};
 
 const {
     Provider: ProviderGeners,
@@ -64,7 +55,6 @@ const {
 } = React.createContext();
 
 export {
-    debounce,
     ProviderGeners,
     ConsumerGeners
 }
