@@ -88,7 +88,6 @@ export default class FilmCard extends Component {
     }
 
     function FilmTextDate() {
-      console.log(date)
       return <p className='film-card_text__date'>{(!date || null) ? null : date = format(new Date(date), 'PP')}</p>
     }
 
