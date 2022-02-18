@@ -12,7 +12,7 @@ export default class FilmCard extends Component {
 
   static propTypes = {
     name: PropTypes.string,
-    date: PropTypes.string,
+    date: PropTypes.null,
     overview: PropTypes.string,
     img: PropTypes.string,
     id: PropTypes.number,
@@ -23,7 +23,7 @@ export default class FilmCard extends Component {
 
   static defaultProps = {
     name: "Без названия",
-    date: "Дата премьеры не известна",
+    date: null,
     overview: "Нет описания фильма",
     img: "https://avatars.mds.yandex.net/get-kinopoisk-image/1600647/e48bc3b5-24c9-46dd-9a05-2ae421830604/600x900",
     count: 0,
@@ -88,7 +88,8 @@ export default class FilmCard extends Component {
     }
 
     function FilmTextDate() {
-      return <p className='film-card_text__date'>{!date ? null : date = format(new Date(date), 'PP')}</p>
+      console.log(date)
+      return <p className='film-card_text__date'>{(!date || nul) ? null : date = format(new Date(date), 'PP')}</p>
     }
 
     function FilmTextGenres() {
